@@ -107,8 +107,13 @@ static int drv2605_set_waveform_sequence(struct drv2605_data *pDrv2605data, unsi
 	return drv2605_bulk_write(pDrv2605data, WAVEFORM_SEQUENCER_REG, (size>WAVEFORM_SEQUENCER_MAX)?WAVEFORM_SEQUENCER_MAX:size, seq);
 }
 
+static int voltage_control = 0x7e;
+module_param_named(current_voltage, voltage_control, int, 0644);
+
 static void drv2605_change_mode(struct drv2605_data *pDrv2605data, char work_mode, char dev_mode)
 {
+
+	drv2605_reg_write(pDrv2605data, RATED_VOLTAGE_REG, voltage_control);
 	/* please be noted : LRA open loop cannot be used with analog input mode */
 	if(dev_mode == DEV_IDLE){
 		pDrv2605data->dev_mode = dev_mode;
@@ -708,7 +713,7 @@ static void dev_init_platform_data(struct drv2605_data *pDrv2605data)
 	//OTP memory saves data from 0x16 to 0x1a
 	if(pDrv2605data->OTP == 0) {
 		if(actuator.rated_vol != 0){
-			drv2605_reg_write(pDrv2605data, RATED_VOLTAGE_REG, actuator.rated_vol);
+			drv2605_reg_write(pDrv2605data, RATED_VOLTAGE_REG, voltage_control);
 		}else{
 			printk("%s, ERROR Rated ZERO\n", __FUNCTION__);
 		}
